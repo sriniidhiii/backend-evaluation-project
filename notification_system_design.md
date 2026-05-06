@@ -1,37 +1,59 @@
 # Notification System Design
 
-## Overview
-This project implements a backend system with logging middleware that captures application events and sends them to an external logging API.
+## Stage 1: API Design
 
-## Architecture
-- Backend: Node.js with Express
-- Logging Middleware: Custom reusable function
-- External API: Evaluation logging service
+GET /notifications  
+POST /notifications  
+PATCH /notifications/{id}/read  
 
-## Flow
-1. User registers and gets clientID and clientSecret
-2. User authenticates and receives access_token
-3. Backend uses access_token to send logs to API
+---
 
-## Logging Middleware
-A reusable function:
-Log(stack, level, package, message)
+## Stage 2: Database Design
 
-It sends logs using HTTP POST request with:
-- stack (backend/frontend)
-- level (info, error, etc.)
-- package (route, handler, etc.)
-- message (log message)
+Tables:
+- users
+- notifications
 
-## API Integration
-- Register API
-- Auth API
-- Log API
+notifications:
+- id
+- user_id
+- type
+- message
+- is_read
+- created_at
 
-## Technologies Used
-- Node.js
-- Express.js
-- Axios
+---
 
-## Conclusion
-The system ensures proper logging and monitoring of backend events using a structured logging mechanism.
+## Stage 3: Query Optimization
+
+Problem: Slow query due to full table scan
+
+Solution:
+CREATE INDEX idx_user_read_created
+ON notifications(studentID, isRead, createdAt DESC);
+
+---
+
+## Stage 4: Performance
+
+- Use caching (Redis)
+- Pagination
+- Lazy loading
+
+---
+
+## Stage 5: Reliability
+
+Problem: Notify all is slow
+
+Solution:
+- Use message queue
+- Async processing
+
+---
+
+## Stage 6: Priority Inbox
+
+Sort by:
+- Type priority (Placement > Result > Event)
+- Timestamp (latest first)
