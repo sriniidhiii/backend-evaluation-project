@@ -44,13 +44,33 @@ ON notifications(studentID, isRead, createdAt DESC);
 
 ## Stage 5: Reliability
 
-Problem: Notify all is slow
+Problems:
+- Sequential processing is slow
+- If email fails, process stops midway
+- No retry mechanism
+- DB and email are tightly coupled
 
 Solution:
-- Use message queue
-- Async processing
+- Use message queue (Kafka/RabbitMQ)
+- Retry failed jobs
+- Decouple email & DB operations
 
----
+Improved Pseudocode:
+
+function notify_all(student_ids, message):
+    for student_id in student_ids:
+        save_to_db(student_id, message)
+
+    push_to_queue(student_ids, message)
+
+worker():
+    while true:
+        job = get_from_queue()
+        try:
+            send_email(job.student_id, job.message)
+            push_to_app(job.student_id, job.message)
+        except:
+            retry(job)
 
 ## Stage 6: Priority Inbox
 
